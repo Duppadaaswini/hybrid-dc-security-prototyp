@@ -1,0 +1,162 @@
+# =========================================================================
+# STEP 1: DEFAULT-DENY ALL traffic in every application namespace.
+# This is the core Zero-Trust principle: nothing is allowed unless explicitly
+# permitted below. This alone stops lateral movement between App A and App B.
+# =========================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: app-a
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: app-b
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+
+# =========================================================================
+# STEP 2: Explicit allow — App A frontend may talk to App A backend ONLY.
+# (Same pattern duplicated for App B.) This is the equivalent of an AWS
+# Security Group rule: "allow port 80 from sg-frontend-a only".
+# =========================================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: app-a
+spec:
+  podSelector:
+    matchLabels: { app: app-a-backend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app: app-a-frontend }
+      ports: [{ protocol: TCP, port: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: app-b
+spec:
+  podSelector:
+    matchLabels: { app: app-b-backend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app: app-b-frontend }
+      ports: [{ protocol: TCP, port: 80 }]
+
+# =========================================================================
+# STEP 3: Allow the ZTNA gateway (faculty-access namespace) to reach ONLY
+# each app's frontend — simulating identity-aware, per-app faculty access
+# instead of a flat VPN that reaches the whole network.
+# =========================================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ztna-gateway-to-frontend
+  namespace: app-a
+spec:
+  podSelector:
+    matchLabels: { app: app-a-frontend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { security-zone: ztna-gateway }
+      ports: [{ protocol: TCP, port: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ztna-gateway-to-frontend
+  namespace: app-b
+spec:
+  podSelector:
+    matchLabels: { app: app-b-frontend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { security-zone: ztna-gateway }
+      ports: [{ protocol: TCP, port: 80 }]
+
+# =========================================================================
+# STEP 4: Allow DNS egress (needed for pods to resolve anything at all —
+# without this, default-deny also breaks internal DNS lookups).
+# =========================================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: app-a
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to: []
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: app-b
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to: []
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+
+# =========================================================================
+# STEP 5: Allow frontend -> backend EGRESS explicitly (default-deny blocks
+# egress too, so the frontend pod needs permission to initiate to backend).
+# =========================================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress-to-backend
+  namespace: app-a
+spec:
+  podSelector:
+    matchLabels: { app: app-a-frontend }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: { app: app-a-backend }
+      ports: [{ protocol: TCP, port: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress-to-backend
+  namespace: app-b
+spec:
+  podSelector:
+    matchLabels: { app: app-b-frontend }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: { app: app-b-backend }
+      ports: [{ protocol: TCP, port: 80 }]

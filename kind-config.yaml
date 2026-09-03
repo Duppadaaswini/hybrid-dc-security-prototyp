@@ -1,0 +1,12 @@
+# kind cluster config — simulates the "private datacenter" Kubernetes/OpenShift platform
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: private-dc
+nodes:
+  - role: control-plane
+  - role: worker   # represents App A's node pool
+  - role: worker   # represents App B's node pool
+networking:
+  # disable kindnet so we can install Calico for real NetworkPolicy enforcement
+  disableDefaultCNI: true
+  podSubnet: "10.244.0.0/16"

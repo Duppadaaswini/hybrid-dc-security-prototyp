@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-a
+  labels:
+    app.kubernetes.io/name: app-a
+    security-zone: app-a
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-b
+  labels:
+    app.kubernetes.io/name: app-b
+    security-zone: app-b
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: faculty-access
+  labels:
+    app.kubernetes.io/name: faculty-access
+    security-zone: ztna-gateway

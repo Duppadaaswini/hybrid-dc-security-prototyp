@@ -1,0 +1,12 @@
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+localstack-data/
+.env
+*.env
+*.log
+node_modules/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
