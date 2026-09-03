@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisco VIP — Zero Trust Security Prototype</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#17202a}
+header{background:#111827;color:white;padding:45px 8%;text-align:center}
+header h1{margin:0;font-size:38px}
+header p{font-size:18px;color:#cbd5e1}
+main{max-width:1100px;margin:35px auto;padding:0 20px}
+.card{background:white;border-radius:12px;padding:25px;margin-bottom:22px;box-shadow:0 3px 12px #00000012}
+h2{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.status{padding:18px;border-radius:10px;background:#f8fafc}
+.allowed{border-left:5px solid #16a34a}
+.blocked{border-left:5px solid #dc2626}
+.badge{font-weight:bold}
+footer{text-align:center;padding:30px;color:#64748b}
+a{color:#2563eb}
+code{background:#eef2ff;padding:3px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Cisco VIP</h1>
+<p>Zero Trust Private Datacenter Security Prototype</p>
+<p>Kubernetes • Calico • Terraform • IAM • Security Testing</p>
+</header>
+
+<main>
+
+<div class="card">
+<h2>??? Security Overview</h2>
+<p>This prototype demonstrates Zero Trust network segmentation between two isolated applications running on Kubernetes.</p>
+<p>Every application namespace uses default-deny policies, with only explicitly authorized communication permitted.</p>
+</div>
+
+<div class="card">
+<h2>??? Architecture</h2>
+<div class="grid">
+<div class="status"><b>App A</b><br>Frontend + Backend</div>
+<div class="status"><b>App B</b><br>Frontend + Backend</div>
+<div class="status"><b>Calico</b><br>Network Policy Enforcement</div>
+<div class="status"><b>Terraform</b><br>Infrastructure + IAM</div>
+</div>
+</div>
+
+<div class="card">
+<h2>?? Verified Security Tests</h2>
+
+<div class="status allowed">
+<span class="badge">? ALLOWED</span><br>
+App A Frontend ? App A Backend<br>
+HTTP 200
+</div><br>
+
+<div class="status blocked">
+<span class="badge">?? BLOCKED</span><br>
+App A Frontend ? App B Frontend<br>
+HTTP 000 / connection timeout
+</div><br>
+
+<div class="status blocked">
+<span class="badge">?? BLOCKED</span><br>
+App A Frontend ? App B Backend<br>
+HTTP 000 / connection timeout
+</div><br>
+
+<div class="status blocked">
+<span class="badge">?? BLOCKED</span><br>
+App A Backend ? App B Frontend<br>
+HTTP 000 / connection timeout
+</div>
+
+</div>
+
+<div class="card">
+<h2>?? Zero Trust Controls</h2>
+<ul>
+<li>Default-deny ingress and egress</li>
+<li>Explicit frontend-to-backend authorization</li>
+<li>Cross-application traffic isolation</li>
+<li>DNS-only egress where required</li>
+<li>Terraform-managed IAM least-privilege policies</li>
+<li>Automated attack-test scripts</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>?? Project</h2>
+<p>The complete reproducible implementation is available on GitHub.</p>
+<p><a href="https://github.com/Duppadaaswini/hybrid-dc-security-prototyp" target="_blank">View GitHub Repository ?</a></p>
+</div>
+
+<div class="card">
+<h2>?? Prototype Note</h2>
+<p>The Kubernetes and Calico security controls were tested locally on a Kind cluster. Terraform resources were validated against LocalStack. The LocalStack IAM enforcement limitation is documented in the repository.</p>
+</div>
+
+</main>
+
+<footer>
+Cisco VIP Security Prototype • Built as a hands-on Zero Trust demonstration
+</footer>
+
+</body>
+</html>
+
